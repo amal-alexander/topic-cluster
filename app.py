@@ -8,8 +8,8 @@ from collections import Counter
 from wordcloud import WordCloud
 import matplotlib.pyplot as plt
 
-# Load model
-model = SentenceTransformer("all-MiniLM-L6-v2")
+# Load model safely (force CPU to avoid meta tensor issue)
+model = SentenceTransformer("all-MiniLM-L6-v2", device='cpu')
 
 # Google autocomplete function
 def get_google_suggestions(keyword):
@@ -44,7 +44,7 @@ def show_wordcloud(text):
     plt.axis("off")
     st.pyplot(plt)
 
-# Clustering
+# Clustering logic
 def generate_clusters(seed):
     prompts = [f"{q} {seed}" for q in ["what is", "how to", "why", "can", "does", "vs", "near me", "examples of"]]
     suggestions = []
@@ -72,16 +72,15 @@ def generate_clusters(seed):
     return clusters
 
 # ---------- Streamlit UI ----------
-
 st.set_page_config(page_title="Smart Topic Cluster Generator", layout="wide")
-st.title("🧠 AnswerSocrates Clone: Topic Cluster Generator")
+st.title("🧠 Topic Cluster Generator | Content Tool")
 st.write("Enter a seed keyword to generate blog topic ideas grouped into intent-based clusters.")
 
 # Session state for history
 if 'history' not in st.session_state:
     st.session_state.history = []
 
-# Input box
+# Input
 seed = st.text_input("🔍 Enter seed keyword (e.g., home loan, travel insurance, etc.)")
 
 if st.button("Generate Topics"):
@@ -123,10 +122,12 @@ if st.button("Generate Topics"):
                 key='download-csv'
             )
 
-# Sidebar: recent keyword history
+# Sidebar: recent history
 st.sidebar.subheader("🔁 Recent Keywords")
 for item in st.session_state.history[-5:][::-1]:
     st.sidebar.markdown(f"• {item}")
+
+# Footer
 st.markdown("---")
 st.markdown(
     "<div style='text-align: center; color: gray;'>Made with ❤️ by <b>Amal Alexander</b></div>",
